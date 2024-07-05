@@ -2,6 +2,13 @@
 #include "raymath.h"
 #include "fmt/core.h"
 
+#define MAX_RAY_REFLECTIONS 8
+
+struct Sphere {
+	Vector3 position;
+	float radius;
+};
+
 int main() {
 	
 	constexpr int screen_width = 1000;
@@ -21,9 +28,17 @@ int main() {
 	//const Model bunny = LoadModel("bunny.obj");
 
 	SetMousePosition(screen_width / 2, screen_height / 2);
-	DisableCursor(); 
+	DisableCursor();
 
-	while (!WindowShouldClose()) 
+	Sphere spheres[] = {
+		{ { 0, 1, 0 }, 1 },
+		{ { 4, 1, 0 }, 1 },
+		{ { 2, 2.5f, 0 }, 0.4f }
+	};
+
+	int numSpheres = std::size(spheres);
+
+	while (!WindowShouldClose())
 	{
 
 		UpdateCamera(&camera, CAMERA_FREE);
@@ -32,7 +47,7 @@ int main() {
 		DrawFPS(10, 10);
 
 		//return to default position
-		if (IsKeyPressed(KEY_ENTER)) 
+		if (IsKeyPressed(KEY_ENTER))
 		{
 			camera.position = { 4.0f, 2.0f, 4.0f };
 			camera.target = { 0.0f, 1.5f, 0.0f };
@@ -49,36 +64,42 @@ int main() {
 		BeginMode3D(camera);
 		///////////////////////////
 
-		Ray camera_ray = { camera.position, Vector3Subtract(camera.target, camera.position) };
-		camera_ray.direction = Vector3Normalize(camera_ray.direction);
+		Ray camera_ray = { camera.position, Vector3Normalize(Vector3Subtract(camera.target, camera.position)) };
 
-		constexpr Vector3 sphere_position = { 0, 1, 0 };
-		constexpr float sphere_radius = 1.0f;
+		for (int current_reflections = 0; current_reflections < MAX_RAY_REFLECTIONS; ++current_reflections) {
+			RayCollision closest_collision = { 0 };
+			closest_collision.distance = FLT_MAX; // Use max float value to ensure any real collision will be closer
+			int hitSphereIndex = -1;
 
-		const RayCollision sphere_collision = GetRayCollisionSphere(camera_ray, sphere_position, sphere_radius);
+			// Check collision with all spheres
+			for (int i = 0; i < numSpheres; ++i) {
+				RayCollision collision = GetRayCollisionSphere(camera_ray, spheres[i].position, spheres[i].radius);
+				if (collision.hit && collision.distance < closest_collision.distance) {
+					closest_collision = collision;
+					hitSphereIndex = i;
+				}
+			}
 
-		const bool hit = sphere_collision.hit && sphere_collision.distance < 10;
+			// If there's a collision, process it
+			if (hitSphereIndex != -1) {
+				DrawSphere(closest_collision.point, 0.1f, MAGENTA); // Visualize collision point
+				DrawLine3D(camera_ray.position, closest_collision.point, GetColor(current_reflections * 0x111111FF)); // Visualize ray
 
-		if (hit) 
-		{
-
-			DrawSphere(sphere_collision.point, 0.1f, MAGENTA);
-			DrawLine3D(Vector3Add(camera.position, {0.0f,0.1f,0.0f}), sphere_collision.point, RED);
-
-			const Vector3 vec_direction = Vector3Subtract(sphere_collision.point, camera.position);
-
-			Vector3 reflected_direction = Vector3Reflect(vec_direction, sphere_collision.normal);
-  
-			reflected_direction = Vector3Normalize(reflected_direction);
-
-			const Vector3 reflected_end_point = Vector3Add(sphere_collision.point, Vector3Scale(reflected_direction, 5));
-
-			DrawLine3D(sphere_collision.point, reflected_end_point, MAGENTA);
+				// Reflect the ray
+				camera_ray.position = closest_collision.point;
+				camera_ray.direction = Vector3Normalize(Vector3Reflect(camera_ray.direction, closest_collision.normal));
+			}
+			else {
+				// No collision, break out of the loop
+				break;
+			}
 		}
 
 		DrawGrid(10, 1.0f);
 
-		DrawSphere({0, 1, 0}, 1, BLUE);
+		DrawSphere({ 0, 1, 0 }, 1, BLUE);
+		DrawSphere({ 4, 1, 0 }, 1, YELLOW);
+		DrawSphere({ 2, 2.5f, 0 }, 0.4f, LIME);
 
 		//if (IsModelReady(bunny))
 		//{
@@ -88,11 +109,6 @@ int main() {
 		///////////////////////////
 		EndMode3D();
 		///////////////////////////
-
-		if (hit) 
-		{
-			DrawText("Hit!", 10, screen_height - 40, 20, RED);
-		}
 
 		/*************************/
 		EndDrawing();
