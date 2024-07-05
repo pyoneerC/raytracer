@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="ConanVariables">
+    <Conandecimal_for_cppRootFolder>C:/Users/Usuario/.conan2/p/decim535ef04d1658d/p</Conandecimal_for_cppRootFolder>
+    <Conandecimal_for_cppBinaryDirectories></Conandecimal_for_cppBinaryDirectories>
+    <Conandecimal_for_cppCompilerFlags></Conandecimal_for_cppCompilerFlags>
+    <Conandecimal_for_cppLinkerFlags></Conandecimal_for_cppLinkerFlags>
+    <Conandecimal_for_cppPreprocessorDefinitions></Conandecimal_for_cppPreprocessorDefinitions>
+    <Conandecimal_for_cppIncludeDirectories>$(Conandecimal_for_cppRootFolder)/include;</Conandecimal_for_cppIncludeDirectories>
+    <Conandecimal_for_cppResourceDirectories></Conandecimal_for_cppResourceDirectories>
+    <Conandecimal_for_cppLibraryDirectories></Conandecimal_for_cppLibraryDirectories>
+    <Conandecimal_for_cppLibraries></Conandecimal_for_cppLibraries>
+    <Conandecimal_for_cppSystemLibs></Conandecimal_for_cppSystemLibs>
+  </PropertyGroup>
+</Project>
